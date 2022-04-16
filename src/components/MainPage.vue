@@ -6,10 +6,12 @@
         v-for="note in noteList"
         v-bind:note="note"
         v-bind:key="note.id"
+        v-bind:layer = "1"
         @delete="onDeleteNote"
         @editStart="onEditNoteStart"
         @editEnd="onEditNoteEnd"
         @addChild="onAddChildNote"
+        @addNoteAfter="onAddNoteAfter"
       />
 
       <!-- ノート追加ボタン -->
@@ -33,37 +35,54 @@ export default {
     }
   },
   methods: {
-    onClickButtonAdd : function() {
-      this.noteList.push({
+    onAddNoteCommon : function(targetList,layer,index){
+      layer = layer || 1;
+      const note = {
         id : new Date().getTime().toString(16),
-        name : `新規ノート`,
-        mouseover : false,
-        editing : false,
+        name: `新規ノート-${layer}-${targetList.length}`,
+        mouseover: false,
+        editing: false,
         children: [],
-      })
-    },
-    onDeleteNote : function(deleteNote) {
-      const index = this.noteList.indexOf(deleteNote);
-      this.noteList.splice(index, 1);
-    },
-    onEditNoteStart : function(editNote) {
-      for (let note of this.noteList) {
-        note.editing = (note.id === editNote.id);
+        layer: layer,
+      };
+
+      if(index == null){
+        targetList.push(note);
+      }else{
+        targetList.splice(index + 1,0,note);
       }
     },
-    onEditNoteEnd : function() {
-      for (let note of this.noteList) {
+    onClickButtonAdd : function() {
+      this.onAddNoteCommon(this.noteList);
+    },
+    onDeleteNote : function(parentNote,note) {
+      const targetList = parentNote == null ? this.noteList : parentNote.children;
+      const index = targetList.indexOf(note);
+      targetList.splice(index,1);
+
+    },
+    onEditNoteStart : function(editNote,parentNote) {
+      const targetList = parentNote == null ? this.noteList : parentNote.children;
+      for (let note of targetList) {
+        note.editing = (note.id === editNote.id);
+        this.onEditNoteStart(editNote,note);
+      }
+    },
+    onEditNoteEnd : function(parentNote) {
+      const targetList = parentNote === null ? this.noteList : parentNote.children;
+      for (let note of targetList) {
           note.editing = false;
+          this.onEditNoteEnd(note);
       }
     },
     onAddChildNote : function(note){
-      note.children.push({
-        id : new Date().getTime().toString(16),
-        name: note.name + 'の子',
-        mouseover: false,
-        editing: false,
-        children :[],
-      })
+      this.onAddNoteCommon(note.children,note.layer+1);
+    },
+    onAddNoteAfter: function(parentNote,note){
+      const targetList = parentNote == null ? this.noteList : parentNote.children;
+      const layer = parentNote == null ? 1 : note.layer;
+      const index = targetList.indexOf(note);
+      this.onAddNoteCommon(targetList, layer, index);
     }
   },
   components: {
