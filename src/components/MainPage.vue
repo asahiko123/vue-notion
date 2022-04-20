@@ -4,11 +4,12 @@
       <!-- ノートリスト -->
       <NoteItem
         v-for="note in noteList"
-        v-bind:note="note"
         v-bind:key="note.id"
+        v-bind:note="note"
         @delete="onDeleteNote"
         @editStart="onEditNoteStart"
         @editEnd="onEditNoteEnd"
+        @addChild="onAddChildNote"
       />
 
       <!-- ノート追加ボタン -->
@@ -38,11 +39,13 @@ export default {
         name : `新規ノート`,
         mouseover : false,
         editing : false,
+        children: [],
       })
     },
-    onDeleteNote : function(deleteNote) {
-      const index = this.noteList.indexOf(deleteNote);
-      this.noteList.splice(index, 1);
+    onDeleteNote : function(parentNote,note) {
+      const targetList = parentNote == null ? this.noteList : parentNote.children;
+      const index = targetList.indexOf(note);
+      targetList.splice(index, 1);
     },
     onEditNoteStart : function(editNote) {
       for (let note of this.noteList) {
@@ -53,6 +56,14 @@ export default {
       for (let note of this.noteList) {
           note.editing = false;
       }
+    },
+    onAddChildNote: function(){
+      note.children.push({
+        id : new Date().getTime().toString(16),
+        name : `新規ノート`,
+        mouseover : false,
+        editing : false,
+      });
     },
   },
   components: {

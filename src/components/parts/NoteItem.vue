@@ -1,5 +1,5 @@
 <template>
-  <div class="note"
+  <div class="note-family"
     @mouseover="onMouseOver"
     @mouseleave="onMouseLeave"
     v-bind:class="{mouseover: note.mouseover && !note.editing}"
@@ -8,7 +8,7 @@
       <input v-model="note.name" class="transparent" @keypress.enter="onEditEnd" />
     </template>
     <template v-else>
-    <div class="note-icon">
+    <div class="note-icon" @click="onClickChildNote(note)">
       <i class="fas fa-file-alt"></i>
     </div>
     <div class="note-name">{{note.name}}</div>
@@ -28,6 +28,16 @@
       </div>
     </div>
     </template>
+    <div class="child-note">
+      <NoteItem 
+        v-for="childNote in note.children"
+        v-bind:key="childNote.id"
+        v-bind:note="childNote"
+        @delete="onClickDelete"
+        @editStart="onEditNoteStart"
+        @editEnd="onEditNoteEnd"
+        @addChild="onAddChildNote"/>
+    </div>
   </div>
 </template>
 
@@ -39,10 +49,10 @@ export default {
   ],
   methods: {
     onMouseOver : function() {
-      this.note.mouseover = true;
+      return this.note.mouseover = true;
     },
     onMouseLeave : function() {
-      this.note.mouseover = false;
+      return this.note.mouseover = false;
     },
     onClickDelete : function(note) {
       this.$emit('delete', note);
@@ -53,6 +63,9 @@ export default {
     onEditEnd : function() {
       this.$emit('editEnd');
     },
+    onClickChildNote: function(note){
+      this.$emit('addChild',note);
+    }
   },
 }
 </script>
