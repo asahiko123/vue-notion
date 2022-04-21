@@ -1,17 +1,15 @@
 <template>
-<div class="note-family">
+  <div class="note-family">
   <div class="note"
-
     @mouseover="onMouseOver"
     @mouseleave="onMouseLeave"
     v-bind:class="{mouseover: note.mouseover && !note.editing}"
   >
-  
     <template v-if="note.editing">
-      <input v-model="note.name" class="transparent" @keypress.enter="onEditEnd" />
+      <input v-bind:value="value" @input="$emit('input',$event.target.value)" class="transparent" @keypress.enter="onEditEnd" />
     </template>
     <template v-else>
-    <div class="note-icon" @click="onClickChildNote(note)">
+    <div class="note-icon">
       <i class="fas fa-file-alt"></i>
     </div>
     <div class="note-name">{{note.name}}</div>
@@ -20,62 +18,57 @@
       <div class="button-icon" v-if="layer < 3" @click="onClickChildNote(note)">
         <i class="fas fa-sitemap"></i>
       </div>
-      <div class="button-icon" @click="onClickAddNoteAfter(parentNote,note)">
+      <div class="button-icon" @click="onClickAddNoteAfter(parentNote, note)">
         <i class="fas fa-plus-circle"></i>
       </div>
       <div class="button-icon" @click="onClickEdit(note)">
         <i class="fas fa-edit"></i>
       </div>
-      <div class="button-icon" @click="onClickDelete(parentNote,note)">
+      <div class="button-icon" @click="onClickDelete(parentNote, note)">
         <i class="fas fa-trash"></i>
       </div>
     </div>
     </template>
-    <div class="child-note">
-      <NoteItem 
-        v-for="childNote in note.children"
-        v-bind:key="childNote.id"
-        v-bind:note="childNote"
-        @delete="onClickDelete"
-        @editStart="onEditNoteStart"
-        @editEnd="onEditNoteEnd"
-        @addChild="onAddChildNote"/>
-    </div>
   </div>
   <div class="child-note">
-      <NoteItem
-        v-for="childNote in note.children"
-        v-bind:note="childNote"
-        v-bind:key="childNote.id"
-        v-bind:parentNote = "note"
-        v-bind:layer="layer + 1"
-        @delete ="onClickDelete"
-        @editStart="onClickEdit"
-        @editEnd="onEditEnd"
-        @addChild="onClickChildNote"
-        @addNoteAfter="onClickAddNoteAfter"
-      />
-    </div>
-</div>
+    <draggable v-bind:list="note.children" group="notes">
+    <NoteItem
+      v-for="childNote in note.children"
+      v-bind:note="childNote"
+      v-bind:parentNote="note"
+      v-bind:layer="layer + 1"
+      v-bind:key="childNote.id"
+      @delete="onClickDelete"
+      @editStart="onClickEdit"
+      @editEnd="onEditEnd"
+      @addChild="onClickChildNote"
+      @addNoteAfter="onClickAddNoteAfter"
+      @mouseover="childNote.mouseover = $event"
+      @input="childNote.name = $event"
+    />
+    </draggable>
+  </div>
+  </div>  
 </template>
 
 <script>
+import draggable from 'vuedraggable'
 export default {
   name: 'NoteItem',
   props: [
     'note',
     'parentNote',
-    'layer'
+    'layer',
   ],
   methods: {
     onMouseOver : function() {
-      return this.note.mouseover = true;
+      this.$emit('mouseover',true);
     },
     onMouseLeave : function() {
-      return this.note.mouseover = false;
+      this.$emit('mouseover',false);
     },
-    onClickDelete : function(parentNote,note) {
-      this.$emit('delete',parentNote, note);
+    onClickDelete : function(parentNote, note) {
+      this.$emit('delete', parentNote, note);
     },
     onClickEdit : function(note) {
       this.$emit('editStart', note);
@@ -83,14 +76,15 @@ export default {
     onEditEnd : function() {
       this.$emit('editEnd');
     },
-
-    onClickChildNote : function(note){
-      this.$emit('addChild',note);
+    onClickChildNote : function(note) {
+      this.$emit('addChild', note);
     },
-    onClickAddNoteAfter : function(parentNote,note){
-      this.$emit('addNoteAfter',parentNote,note);
-
-    }
+    onClickAddNoteAfter : function(parentNote, note) {
+      this.$emit('addNoteAfter', parentNote, note);
+    },    
+  },
+  components: {
+    draggable,
   },
 }
 </script>
@@ -123,8 +117,7 @@ export default {
     }
   }
 }
-
-.child-note{
+.child-note {
   padding-left: 10px;
 }
 </style>

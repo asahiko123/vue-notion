@@ -2,19 +2,21 @@
   <div class="main-page">
     <div class="left-menu" @click.self="onEditNoteEnd()">
       <!-- ノートリスト -->
+      <draggable v-bind:list="noteList" group="notes">      
       <NoteItem
         v-for="note in noteList"
-        v-bind:key="note.id"
         v-bind:note="note"
-        v-bind:layer = "1"
-
+        v-bind:key="note.id"
+        v-bind:layer="1"
         @delete="onDeleteNote"
         @editStart="onEditNoteStart"
         @editEnd="onEditNoteEnd"
         @addChild="onAddChildNote"
         @addNoteAfter="onAddNoteAfter"
-
+        @mouseover="note.mouseover = $event"
+        @input="note.name = $event"
       />
+      </draggable>
 
       <!-- ノート追加ボタン -->
       <button class="transparent" @click="onClickButtonAdd">
@@ -29,7 +31,7 @@
 
 <script>
 import NoteItem from '@/components/parts/NoteItem.vue'
-
+import draggable from 'vuedraggable'
 export default {
   data() {
     return {
@@ -37,61 +39,57 @@ export default {
     }
   },
   methods: {
-    onAddNoteCommon : function(targetList,layer,index){
+    onAddNoteCommon : function(targetList, layer, index) {
       layer = layer || 1;
       const note = {
         id : new Date().getTime().toString(16),
-
-        name: `新規ノート-${layer}-${targetList.length}`,
-        mouseover: false,
-        editing: false,
-        children: [],
-        layer: layer,
+        name : `新規ノート-${layer}-${targetList.length}`,
+        mouseover : false,
+        editing : false,
+        children : [],
+        layer : layer,
       };
-
-      if(index == null){
+      if (index == null) {
         targetList.push(note);
-      }else{
-        targetList.splice(index + 1,0,note);
+      } else {
+        targetList.splice(index + 1, 0, note);
       }
     },
     onClickButtonAdd : function() {
       this.onAddNoteCommon(this.noteList);
-
     },
-    onDeleteNote : function(parentNote,note) {
+    onDeleteNote : function(parentNote, note) {
       const targetList = parentNote == null ? this.noteList : parentNote.children;
       const index = targetList.indexOf(note);
-      targetList.splice(index,1);
-
+      targetList.splice(index, 1);
     },
-    onEditNoteStart : function(editNote,parentNote) {
+    onEditNoteStart : function(editNote, parentNote) {
       const targetList = parentNote == null ? this.noteList : parentNote.children;
       for (let note of targetList) {
         note.editing = (note.id === editNote.id);
-        this.onEditNoteStart(editNote,note);
+        this.onEditNoteStart(editNote, note);
       }
     },
     onEditNoteEnd : function(parentNote) {
-      const targetList = parentNote === null ? this.noteList : parentNote.children;
+      const targetList = parentNote == null ? this.noteList : parentNote.children;
       for (let note of targetList) {
-          note.editing = false;
-          this.onEditNoteEnd(note);
+        note.editing = false;
+        this.onEditNoteEnd(note);
       }
     },
-    onAddChildNote : function(note){
-      this.onAddNoteCommon(note.children,note.layer+1);
+    onAddChildNote : function(note) {
+      this.onAddNoteCommon(note.children, note.layer + 1);
     },
-    onAddNoteAfter: function(parentNote,note){
+    onAddNoteAfter : function(parentNote, note) {
       const targetList = parentNote == null ? this.noteList : parentNote.children;
       const layer = parentNote == null ? 1 : note.layer;
       const index = targetList.indexOf(note);
       this.onAddNoteCommon(targetList, layer, index);
-    }
-
+    },
   },
   components: {
     NoteItem,
+    draggable,
   },
 }
 </script>
