@@ -3,7 +3,8 @@
   <div class="note"
     @mouseover="onMouseOver"
     @mouseleave="onMouseLeave"
-    v-bind:class="{mouseover: note.mouseover && !note.editing}"
+    @click="onSelect(note)"
+    v-bind:class="{mouseover: note.mouseover && !note.editing,selected: note.selected}"
   >
     <template v-if="note.editing">
       <input v-bind:value="value" @input="$emit('input',$event.target.value)" class="transparent" @keypress.enter="onEditEnd" />
@@ -45,6 +46,7 @@
       @addNoteAfter="onClickAddNoteAfter"
       @mouseover="childNote.mouseover = $event"
       @input="childNote.name = $event"
+      @select="onSelect"
     />
     </draggable>
   </div>
@@ -81,7 +83,10 @@ export default {
     },
     onClickAddNoteAfter : function(parentNote, note) {
       this.$emit('addNoteAfter', parentNote, note);
-    },    
+    },   
+    onSelect :function(note){
+      this.$emit('select',note);
+    } 
   },
   components: {
     draggable,
@@ -99,6 +104,11 @@ export default {
   &.mouseover {
     background-color: rgb(232, 231, 228);
     cursor: pointer;
+  }
+  &.selected {
+    color: black;
+    background-color: rgb(232, 231, 228);
+    font-weight: 600;
   }
   .note-icon {
     margin-left: 10px;
