@@ -5,18 +5,18 @@
         @mouseleave ="onMouseLeave"
         v-bind:class="{mouseover: widget.mouseover}">
         <template v-if="widget.type == 'heading'">
-            <input v-bind:value="value" @input="$emit('inputWidget',$event.target.value)"
+            <input v-bind:value="widget.text" @input="$emit('inputWidget',$event.target.value)"
                    class="heading transparent"
                    placeholder="見出し"/>
         </template>
         <template v-if="widget.type == 'body'">
-            <input v-bind:value="value" @input="$emit('inputWidget',$event.target.value)"
+            <input v-bind:value="widget.text" @input="$emit('inputWidget',$event.target.value)"
                    class="body transparent"
                    placeholder="本文">
         </template>
         <template v-if="widget.type =='code'">
             <textarea
-                v-bind:value="value" @input="$emit('inputWidget',$event.target.value)"
+                v-bind:value="widget.text" @inputWidget="$emit('inputWidget',$event.target.value)"
                 class="code"
                 rows="1"
                 placeholder="コード"
