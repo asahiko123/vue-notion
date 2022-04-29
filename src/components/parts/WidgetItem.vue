@@ -4,7 +4,25 @@
         @mouseover ="onMouseOver"
         @mouseleave ="onMouseLeave"
         v-bind:class="{mouseover: widget.mouseover}">
-        <input v-bind:value="value" @inputWidget="$emit('inputWidget',$event.target.value)" class="transparent" placeholder="本文">
+        <template v-if="widget.type == 'heading'">
+            <input v-bind:value="value" @input="$emit('inputWidget',$event.target.value)"
+                   class="heading transparent"
+                   placeholder="見出し"/>
+        </template>
+        <template v-if="widget.type == 'body'">
+            <input v-bind:value="value" @input="$emit('inputWidget',$event.target.value)"
+                   class="body transparent"
+                   placeholder="本文">
+        </template>
+        <template v-if="widget.type =='code'">
+            <textarea
+                v-bind:value="value" @input="$emit('inputWidget',$event.target.value)"
+                class="code"
+                rows="1"
+                placeholder="コード"
+                v-bind:ref="'widget-code-' + widget.id"
+            ></textarea>
+        </template>
         <div v-show="widget.mouseover" class="buttons"></div>
             <div class="button-icon" v-if="layer < 3" @click="onClickChildWidget(widget)">
                 <i class="fas fa-sitemap"></i>
@@ -16,7 +34,12 @@
                 <i class="fas fa-trash"></i>
             </div>
             <div class="button-icon">
-                <i class="fas-cog"></i>
+                 <i class="fas fa-cog" data-toggle="dropdown"></i>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" @click="$emit('typeWidget','heading')">見出し</a>
+                    <a class="dropdown-item" @click="$emit('typeWidget','body')" >本文</a>
+                    <a class="dropdown-item" @click="$emit('typeWidget','code')" >ソースコード</a>
+                </div>
             </div>
             <div class="child-widget">
                 <WidgetItem
@@ -60,7 +83,22 @@ export default{
         onClickAddWidgetAfter :function(parentWidget, widget){
             this.$emit('addWidgetAfter',parentWidget,widget);
         },
+        resizeCodeTextarea: function(){
+            if(this.widget.type !== 'code')return;
+            const textarea = this.$refs[`widget-code-${this.widget.id}`];
+            const promise = new Promise(function(resolve){
+                resolve(textarea.style.height = 'auto')
+            });
+            promise.then(function(){
+                textarea.style.height = textarea.scrollHeight + 'px'
+            });
+        },
     },
+    watch: {
+        'widget.text': function(){
+            this.resizeCodeTextarea();
+        }
+    }
 }
 </script>
 
@@ -83,6 +121,32 @@ export default{
         margin-left: 3px;
         border-radius: 5px;
         }
+    }
+
+     input.heading {
+    font-size: 20px;
+    font-weight: bold;
+    border-bottom: 1.5px solid #e0e0e0;
+    }
+    input.body {
+        font-size: 16px;
+    }
+    .code {
+        width: calc(100% - 120px);
+        height: 35px;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 8px;
+        color: #f8f8f2;
+        background: #282a36;
+        font-size: 14px;
+        font-family: Consolas, Menlo, 'Liberation Mono', Courier, monospace;
+        resize: none;
+    }
+    .code:focus {
+        outline: none;
+        -webkit-box-shadow: none;
+        box-shadow: none;
     }
 }
 

@@ -43,6 +43,7 @@
             @addChild="onAddChildWidget"
             @addWidgetAfter="onAddWidgetAfter"
             @inputWidget="widget.text = $event"
+            @typeWidget="widget.type = $event"
           />
           <button class="transparent" @click="onClickButtonAddWidget">
             <i class="fas fa-plus-square"></i>ウィジェットを追加

@@ -7,7 +7,7 @@
     v-bind:class="{mouseover: note.mouseover && !note.editing,selected: note.selected}"
   >
     <template v-if="note.editing">
-      <input v-bind:value="value" @input="$emit('input',$event.target.value)" class="transparent" @keypress.enter="onEditEnd" />
+      <input v-bind:value="value" @input="$emit('inputWidget',$event.target.value)" class="transparent" @keypress.enter="onEditEnd" />
     </template>
     <template v-else>
     <div class="note-icon">
