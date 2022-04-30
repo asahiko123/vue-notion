@@ -5,14 +5,22 @@
         @mouseleave ="onMouseLeave"
         v-bind:class="{mouseover: widget.mouseover}">
         <template v-if="widget.type == 'heading'">
-            <input v-bind:value="widget.text" @input="$emit('inputWidget',$event.target.value)"
+            <input v-bind:value="widget.text" @inputWidget="$emit('inputWidget',$event.target.value)"
                    class="heading transparent"
-                   placeholder="見出し"/>
+                   placeholder="見出し"
+                   v-bind:ref="'widget-heading-' + widget.id"
+                   @keypress.enter="onClickAddWidgetAfter(parentWidget,widget)"
+                   @keydown.tab="onKeydownTab"
+                   @keydown.delete="onKeydownDelete">
         </template>
         <template v-if="widget.type == 'body'">
-            <input v-bind:value="widget.text" @input="$emit('inputWidget',$event.target.value)"
+            <input v-bind:value="widget.text" @inputWidget="$emit('inputWidget',$event.target.value)"
                    class="body transparent"
-                   placeholder="本文">
+                   placeholder="本文"
+                   v-bind:ref="'widget-body-' + widget.id"
+                   @keypress.enter="onClickAddWidgetAfter(parentWidget,widget)"
+                   @keypress.tab="onKeydownTab"
+                   @keydown.delete="onKeydownDelete">
         </template>
         <template v-if="widget.type =='code'">
             <textarea
@@ -21,6 +29,7 @@
                 rows="1"
                 placeholder="コード"
                 v-bind:ref="'widget-code-' + widget.id"
+                @keydown.delete="onKeydownDelete"
             ></textarea>
         </template>
         <div v-show="widget.mouseover" class="buttons"></div>
@@ -42,6 +51,7 @@
                 </div>
             </div>
             <div class="child-widget">
+                <draggable v-bind:list="widget.children" group="widgets">
                 <WidgetItem
                   v-for="childWidget in widget.children"
                   v-bind:widget="childWidget"
@@ -52,12 +62,14 @@
                   @addChild="onClickChildWidget"
                   @addWidgetAfter="onClickAddWidgetAfter"
                 />
+                </draggable>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import draggable from 'vuedraggable'
 
 export default{
 
@@ -93,12 +105,33 @@ export default{
                 textarea.style.height = textarea.scrollHeight + 'px'
             });
         },
+        onKeydownTab : function(e) {
+        if (this.widget.layer < 3) {
+            this.$emit('addChild', this.widget);
+        }
+        e.preventDefault();
+        },
+        onKeydownDelete :function(e){
+            if(this.widget.text.length === 0){
+                this.$emit('delete',this.parentWidget,this.widget);
+                e.preventDefault();
+            }
+        },
     },
+   
     watch: {
         'widget.text': function(){
             this.resizeCodeTextarea();
         }
-    }
+    },
+    components: {
+        draggable
+    },
+    mounted: function(){
+        const input = this.$refs[`widget-${this.widget.type}-${this.widget.id}`];
+        input.focus();
+    },
+
 }
 </script>
 

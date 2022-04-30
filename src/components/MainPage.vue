@@ -34,6 +34,7 @@
         </div>
         <div class="note-content">
           <h3 class="note-title">{{selectedNote.name}}</h3>
+          <draggable v-bind:list="selectedNote.widgetList" group="widgets">
           <WidgetItem
             v-for="widget in selectedNote.widgetList"
             v-bind:widget="widget"
@@ -45,6 +46,7 @@
             @inputWidget="widget.text = $event"
             @typeWidget="widget.type = $event"
           />
+          </draggable>
           <button class="transparent" @click="onClickButtonAddWidget">
             <i class="fas fa-plus-square"></i>ウィジェットを追加
           </button>
@@ -120,7 +122,7 @@ export default {
       layer = layer || 1;
       const widget = {
         id : new Date().getTime().toString(16),
-        type : 'heading',
+        type : layer== 1 ? 'heading' : 'body',
         text : '',
         mouseover : false,
         children : [],
@@ -148,6 +150,11 @@ export default {
       const targetList = parentWidget == null ? this.selectedNote.widgetList : parentWidget.children;
       const index = targetList.indexOf(widget);
       targetList.splice(index, 1);
+
+      const forcusWidget = (index === 0) ? parentWidget :targetList[index -1];
+      if(forcusWidget != null){
+        forcusWidget.id = (parseInt(forcusWidget.id,16) + 1).toString(16);
+      }
     },
     onSelectNote: function(targetNote){
       const updateSelectStatus = function(targetNote,noteList){
@@ -160,7 +167,8 @@ export default {
       updateSelectStatus(targetNote,this.noteList);
 
       this.selectedNote = targetNote;
-    }
+    },
+    
   },
   computed: {
 
